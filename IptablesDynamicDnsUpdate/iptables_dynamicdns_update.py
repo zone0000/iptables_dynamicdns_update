@@ -34,17 +34,29 @@ class iptables_dynamicdns_update(object):
         return
 
     def delete_chain(self, chain_name):
-        cmd = "iptables -D %s" % self.chain_name
+        cmd = "iptables -F %s" % self.chain_name
         print "cmd : %s" % cmd
         os.system(cmd)
+
+        cmd = "iptables -X %s" % self.chain_name
+        print "cmd : %s" % cmd
+        os.system(cmd)
+        return
 
     def rename_chain(self, from_chain_name, to_chain_name):
         cmd = "iptables -E %s %s" % (from_chain_name, to_chain_name)
         print "cmd : %s" % cmd
         os.system(cmd)
+        return
 
     def regist_chain(self, chain_name):
         cmd = "iptables -I INPUT -j %s" % chain_name
+        print "cmd : %s" % cmd
+        os.system(cmd)
+        return
+
+    def unregist_chain(self, chain_name):
+        cmd = "iptables -D INPUT -j %s" % chain_name
         print "cmd : %s" % cmd
         os.system(cmd)
         return
@@ -67,6 +79,7 @@ class iptables_dynamicdns_update(object):
         self.add_rules_to_chain(chain_name)
         self.regist_chain(chain_name)
         self.delete_chain(self.chain_name)
+        self.unregist_chain(self.chain_name)
         self.rename_chain(chain_name, self.chain_name)
         return
 
