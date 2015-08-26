@@ -78,8 +78,8 @@ class iptables_dynamicdns_update(object):
         self.make_chain(chain_name)
         self.add_rules_to_chain(chain_name)
         self.regist_chain(chain_name)
-        self.delete_chain(self.chain_name)
         self.unregist_chain(self.chain_name)
+        self.delete_chain(self.chain_name)
         self.rename_chain(chain_name, self.chain_name)
         return
 
