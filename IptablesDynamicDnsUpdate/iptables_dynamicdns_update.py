@@ -34,11 +34,11 @@ class iptables_dynamicdns_update(object):
         return
 
     def delete_chain(self, chain_name):
-        cmd = "iptables -F %s" % self.chain_name
+        cmd = "iptables -F %s" % chain_name
         print "cmd : %s" % cmd
         os.system(cmd)
 
-        cmd = "iptables -X %s" % self.chain_name
+        cmd = "iptables -X %s" % chain_name
         print "cmd : %s" % cmd
         os.system(cmd)
         return
