@@ -1,9 +1,11 @@
 #!/usr/bin/python
 
+import sys
 import os
 import re
 import random
 import string
+import json
 
 class iptables_dynamicdns_update(object):
     def __init__(self, ip_ports):
@@ -83,13 +85,37 @@ class iptables_dynamicdns_update(object):
         self.rename_chain(chain_name, self.chain_name)
         return
 
-def main():
-    ip_ports = [
-        ("192.168.0.0/24", "80"),
-        ("github.com", "80")]
+class IptableLoader(object):
+    def __init__(self):
+        self.ip_ports = {}
+
+    def load(self, filename):
+        f = open(filename, 'r')
+        self.ip_ports = json.loads(f.read())
+        f.close()
+        return
+
+    def prints(self):
+        for ip_port in self.ip_ports["ip_ports"]:
+            print "ip: %s, port: %s" % (ip_port["ip"], ip_port["port"])
+
+    def get_ip_ports(self):
+        ip_ports = []
+        for ip_port in self.ip_ports["ip_ports"]:
+            ip_ports.append((ip_port["ip"], ip_port["port"]))
+        return ip_ports
+
+def main(argv):
+    iptable_loader = IptableLoader();
+    iptable_loader.load("ip_ports.json")
+    ip_ports = iptable_loader.get_ip_ports()
 
     ip_update = iptables_dynamicdns_update(ip_ports)
     ip_update.run()
     return
 
-main()
+if __name__ == "__main__":
+    try:
+        main(argv=sys.argv)
+    except os.error, err:
+        print str(err)
