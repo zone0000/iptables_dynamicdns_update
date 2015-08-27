@@ -7,7 +7,7 @@ import random
 import string
 import json
 
-class iptables_dynamicdns_update(object):
+class IptablesDynamicDnsUpdate(object):
     def __init__(self, ip_ports):
         self.ip_ports = ip_ports
         self.chain_name = 'AUTH_CHAIN'
@@ -110,7 +110,7 @@ def main(argv):
     iptable_loader.load("ip_ports.json")
     ip_ports = iptable_loader.get_ip_ports()
 
-    ip_update = iptables_dynamicdns_update(ip_ports)
+    ip_update = IptablesDynamicDnsUpdate(ip_ports)
     ip_update.run()
     return
 
