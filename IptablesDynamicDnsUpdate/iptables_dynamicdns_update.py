@@ -6,27 +6,34 @@ import re
 import random
 import string
 import json
+import dns.resolver
 
 class IptablesDynamicDnsUpdate(object):
     def __init__(self, localport_foreignips):
         self.localport_foreignips = localport_foreignips
         self.chain_name = 'AUTH_CHAIN'
+        self.resolver = dns.resolver.Resolver()
+        self.resolver.nameservers = ['8.8.8.8']
 
     def get_static_ip_address(self, address):
-        hostname = self.get_text_output("host %s" % address)
-        ipaddress = re.findall(r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", hostname)
-        if len(ipaddress) == 0:
-            return address
-        else:
-            return ipaddress[len(ipaddress) - 1]
+        compiledRegexIP = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}($|\/\d{1,2}$)")
 
-    def get_text_output(self, cmd):
-        pipe = os.popen('{ ' + cmd + '; } 2>&1', 'r')
-        pipe = os.popen(cmd + ' 2>&1', 'r')
-        text = pipe.read()
-        if text[-1:] == '\n':
-            text = text[:-1]
-            return text
+        try:
+            matched = compiledRegexIP.match(address)
+            if matched:
+                return matched.group()
+        except:
+            pass
+
+        try:
+            results = self.resolver.query(address, 'A')
+            for result in results:
+                matched = compiledRegexIP.match(result.address)
+                if matched:
+                    return matched.group()
+        except:
+            pass
+
         return
 
     def make_chain(self, chain_name):
@@ -68,10 +75,11 @@ class IptablesDynamicDnsUpdate(object):
             (localport, foreignip) = localport_foreignip
             static_ip = self.get_static_ip_address(foreignip)
 
-            cmd = "iptables -A %s -p tcp -s %s --dport %s -j ACCEPT" % (
-                chain_name, static_ip, localport)
-            print "cmd : %s" % cmd
-            os.system(cmd)
+            if len(static_ip) != 0:
+                cmd = "iptables -A %s -p tcp -s %s --dport %s -j ACCEPT" % (
+                    chain_name, static_ip, localport)
+                print "cmd : %s" % cmd
+                os.system(cmd)
         return
 
     def run(self):
