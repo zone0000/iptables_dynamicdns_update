@@ -6,7 +6,7 @@ import re
 import random
 import string
 import json
-import dns.resolver
+import dns.resolver # from dnspython
 
 class IptablesDynamicDnsUpdate(object):
     ''' Update iptables '''
