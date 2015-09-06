@@ -1,0 +1,6 @@
+{
+    "localport_foreignip": [
+        { "localport": "80", "foreignip": "192.168.0.0/24" },
+        { "localport": "80", "foreignip": "github.com" }
+    ]
+}

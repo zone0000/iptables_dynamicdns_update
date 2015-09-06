@@ -25,7 +25,7 @@
     <Compile Include="iptables_dynamicdns_update.py" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ip_ports.json" />
+    <Content Include="localport_foreignip.json" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

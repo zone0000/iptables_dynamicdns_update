@@ -1,4 +1,4 @@
-#!/usr/bin/python
+﻿#!/usr/bin/python
 
 import sys
 import os
@@ -8,11 +8,11 @@ import string
 import json
 
 class IptablesDynamicDnsUpdate(object):
-    def __init__(self, ip_ports):
-        self.ip_ports = ip_ports
+    def __init__(self, localport_foreignips):
+        self.localport_foreignips = localport_foreignips
         self.chain_name = 'AUTH_CHAIN'
 
-    def get_ip_address(self, address):
+    def get_static_ip_address(self, address):
         hostname = self.get_text_output("host %s" % address)
         ipaddress = re.findall(r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", hostname)
         if len(ipaddress) == 0:
@@ -64,12 +64,12 @@ class IptablesDynamicDnsUpdate(object):
         return
 
     def add_rules_to_chain(self, chain_name):
-        for ip_port in self.ip_ports:
-            (ip, port) = ip_port
-            static_ip = self.get_ip_address(ip)
+        for localport_foreignip in self.localport_foreignips:
+            (localport, foreignip) = localport_foreignip
+            static_ip = self.get_static_ip_address(foreignip)
 
             cmd = "iptables -A %s -p tcp -s %s --dport %s -j ACCEPT" % (
-                chain_name, static_ip, port)
+                chain_name, static_ip, localport)
             print "cmd : %s" % cmd
             os.system(cmd)
         return
@@ -87,30 +87,31 @@ class IptablesDynamicDnsUpdate(object):
 
 class IptableLoader(object):
     def __init__(self):
-        self.ip_ports = {}
+        self.localport_foreignip = {}
 
     def load(self, filename):
         f = open(filename, 'r')
-        self.ip_ports = json.loads(f.read())
+        self.localport_foreignip = json.loads(f.read())
         f.close()
         return
 
     def prints(self):
-        for ip_port in self.ip_ports["ip_ports"]:
-            print "ip: %s, port: %s" % (ip_port["ip"], ip_port["port"])
+        for localport_foreignip in self.localport_foreignip["localport_foreignip"]:
+            print "localPort: %s, foreignIp: %s" % (localport_foreignip["localport"],
+                                                    localport_foreignip["foreignip"])
 
-    def get_ip_ports(self):
-        ip_ports = []
-        for ip_port in self.ip_ports["ip_ports"]:
-            ip_ports.append((ip_port["ip"], ip_port["port"]))
-        return ip_ports
+    def get_localport_forignip(self):
+        localport_foreignips = []
+        for v in self.localport_foreignip["localport_foreignip"]:
+            localport_foreignips.append((v["localport"], v["foreignip"]))
+        return localport_foreignips
 
 def main(argv):
     iptable_loader = IptableLoader();
-    iptable_loader.load("ip_ports.json")
-    ip_ports = iptable_loader.get_ip_ports()
+    iptable_loader.load("localport_foreignip.json")
+    localport_foreignip = iptable_loader.get_localport_forignip()
 
-    ip_update = IptablesDynamicDnsUpdate(ip_ports)
+    ip_update = IptablesDynamicDnsUpdate(localport_foreignip)
     ip_update.run()
     return
 
